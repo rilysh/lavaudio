@@ -2,10 +2,6 @@
 A lavalink wrapper in Node.js
 
 ## 🏵️ Installation
-### From NPM or Yarn
-```sh
-npm i lavaudio # for npm users
-yarn add lavaudio # for yarn users
 ```
 ### 🔖 Directly from GitHub
 ```sh
