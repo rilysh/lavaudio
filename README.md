@@ -5,8 +5,8 @@ A lavalink wrapper in Node.js
 ### 🔖 Directly from GitHub
 ```sh
 git clone https://github.com/rilysh/lavaudio
-# If you haven't TypeScript installed please install it first, shown below
-npm i --location=global TypeScript
+# If you haven't installed TypeScript, please install it first by executing the below command
+npm i --location=global typescript
 ## Go to that cloned folder and run tsc
 cd lavaudio && tsc
 ## Now you should have a dist folder
