@@ -2,7 +2,6 @@
 A lavalink wrapper in Node.js
 
 ## 🏵️ Installation
-```
 ### 🔖 Directly from GitHub
 ```sh
 git clone https://github.com/rilysh/lavaudio
