@@ -359,8 +359,8 @@ export default class Manager extends EventEmitter {
             method: "POST",
         } as RequestOptions;
         return new Promise((resolve) => {
-            httpMod.request(options, () => {
-                resolve(204);
+            httpMod.request(options, (cb: IncomingMessage) => {
+                resolve(cb.statusCode!);
             });
         });
     }
