@@ -1,10 +1,11 @@
 import { EventEmitter } from "events";
-import http, { type IncomingMessage } from "http";
+import http, { type IncomingMessage, type RequestOptions } from "http";
 import https from "https";
 import type {
     ManagerOptions,
     NodeOptions,
     ResponseOptions,
+    RoutePlannerReponse,
     StatsTypes,
     VoiceChannelStruct,
     VoiceStateUpdateData,
@@ -271,16 +272,49 @@ export default class Manager extends EventEmitter {
     }
 
     /**
+     * Get the route planner status
+     * @returns {Promise<RoutePlannerReponse>}
+     */
+    public async getRoutePlanner(): Promise<RoutePlannerReponse> {
+        const node = this.leastUsedNodes[0];
+        if (!node) {
+            throw new Error("No nodes are connected");
+        }
+        const result = await this.request<RoutePlannerReponse>(node, "/routeplanner/status");
+        return result;
+    }
+
+    /**
+     * Unmark a failed address from lavalink
+     * @param address - Failing IP or URL
+     * @returns {Promise<boolean>}
+     */
+    public async unmarkFailedAddress(address: string): Promise<boolean> {
+       const status = await this.routeFreePost(address, "address");
+       return status === 204;
+    }
+
+    /**
+     * Unmark all failed address from lavalink
+     * @param address - Failing IP or URL
+     * @returns {Promise<boolean>}
+     */
+    public async unmarkAllFailedAddress(address: string): Promise<boolean> {
+        const status = await this.routeFreePost(address, "all");
+       return status === 204;
+    }
+
+    /**
      * Request to the lavalink
      * @param node - See NodeOptions typings
      * @param endpoint - String value
      * @param param - String value
      * @returns {Promise<T>}
      */
-    public async request<T>(node: NodeOptions, endpoint: string, param: string): Promise<T> {
+    public async request<T>(node: NodeOptions, endpoint: string, param?: string): Promise<T> {
         const httpMod = node.secure ? https : http;
         return new Promise((resolve) => {
-            httpMod.get(`http${node.secure ? "s" : ""}://${node.host}:${node.port}/${endpoint}?${param}`, {
+            httpMod.get(`http${node.secure ? "s" : ""}://${node.host}:${node.port}/${endpoint}${param ? `?${param}` : ""}`, {
                 headers: {
                     Authorization: node?.auth ?? "",
                 },
@@ -295,6 +329,38 @@ export default class Manager extends EventEmitter {
                 });
             }).on("error", (e: Error): Error => {
                 throw new Error(`Failed to request to the lavalink.\n\nLogs: ${e}`);
+            });
+        });
+    }
+
+    /**
+     * Create a post request to the lavalink's route endpoint
+     * @param address - Failing IP or URL
+     * @param endpoint - All failing IPs or a particular address
+     * @returns {Promise<boolean>}
+     */
+    private async routeFreePost(address: string, endpoint: string): Promise<number> {
+        const node = this.leastUsedNodes[0];
+        if (!node) {
+            throw new Error("No nodes are connected");
+        }
+        const httpMod = node.secure ? https : http;
+        const options = {
+            hostname: node.host,
+            port: node.port,
+            path: `/routeplanner/free/${endpoint}`,
+            headers: {
+                authorization: node?.auth ?? "",
+                "content-type": "application/json",
+            },
+            body: JSON.stringify({
+                address,
+            }),
+            method: "POST",
+        } as RequestOptions;
+        return new Promise((resolve) => {
+            httpMod.request(options, () => {
+                resolve(204);
             });
         });
     }
