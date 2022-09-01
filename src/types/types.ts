@@ -80,3 +80,22 @@ export interface LavalinkOptions {
     code: number;
     guildId: string;
 }
+
+export interface RoutePlannerReponse {
+    class: string;
+    details: {
+        ipBlock: {
+            type: string;
+            size: string;
+        },
+        failingAddresses: [
+            {
+                address: string;
+                failingTimestamp: number;
+                failingTime: string;
+            },
+        ],
+        blockIndex: string;
+        currentAddressIndex: string;
+    }
+}
