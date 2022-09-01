@@ -1,4 +1,5 @@
 import WebSocket from "ws";
+import { version } from "../../package.json";
 import type { NodeOptions } from "../types/types";
 import type Manager from "./Manager";
 
@@ -79,8 +80,7 @@ export default class Node {
         resumeKey: null,
     }) {
         this.manager = manager;
-        // TODO: Create a random ID
-        this.id = options?.id;
+        this.id = options?.id ?? this.genRandomID();
         this.host = options.host;
         this.port = options.port;
         this.auth = options?.auth ?? "";
@@ -146,7 +146,7 @@ export default class Node {
         const headers = {
             Authorization: this.auth,
             "User-Id": this.manager.user,
-            "Client-Name": "lavaudio", // TODO: Add version in format {client}/{version}
+            "Client-Name": `lavaudio/${version}`,
         };
         if (this.resumeKey) {
             Object.assign(headers, { "Resume-Key": this.resumeKey });
@@ -276,5 +276,26 @@ export default class Node {
             if (e) return e;
             return null;
         });
+    }
+
+    /**
+     * {Private} Generate a random ID
+     * @returns {string}
+     */
+    private genRandomID(): string {
+        const lowCase = String.fromCharCode(...Array(123).keys()).slice(97);
+        const upCase = String.fromCharCode(...Array(123).keys()).slice(97).toUpperCase();
+        const num = Math.round(Math.random() * 9) - 1;
+        const mix = (): string => {
+            const result: string[] = [];
+            for (let i = 0; i < 5; i += 1) {
+                result.push(lowCase[Math.round(Math.random() * lowCase.length) - 1]);
+                result.push(num.toString()[Math.round(Math.random() * num.toString().length) - 1]);
+                result.push(upCase[Math.round(Math.random() * upCase.length) - 1]);
+                result.push(num.toString()[Math.round(Math.random() * num.toString().length) - 2]);
+            }
+            return result.join("");
+        };
+        return mix();
     }
 }
