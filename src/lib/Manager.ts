@@ -299,9 +299,9 @@ export default class Manager extends EventEmitter {
      * @param address - Failing IP or URL
      * @returns {Promise<boolean>}
      */
-    public async unmarkAllFailedAddress(address: string): Promise<boolean> {
-        const status = await this.routeFreePost(address, "all");
-       return status === 204;
+    public async unmarkAllFailedAddress(): Promise<boolean> {
+        const status = await this.routeFreePost("all");
+        return status === 204;
     }
 
     /**
@@ -339,7 +339,7 @@ export default class Manager extends EventEmitter {
      * @param endpoint - All failing IPs or a particular address
      * @returns {Promise<boolean>}
      */
-    private async routeFreePost(address: string, endpoint: string): Promise<number> {
+    private async routeFreePost(address?: string, endpoint?: string): Promise<number> {
         const node = this.leastUsedNodes[0];
         if (!node) {
             throw new Error("No nodes are connected");
@@ -348,14 +348,14 @@ export default class Manager extends EventEmitter {
         const options = {
             hostname: node.host,
             port: node.port,
-            path: `/routeplanner/free/${endpoint}`,
+            path: `/routeplanner/free/${endpoint ?? (address ? "address" : "all")}`,
             headers: {
                 authorization: node?.auth ?? "",
                 "content-type": "application/json",
             },
-            body: JSON.stringify({
+            body: address ? JSON.stringify({
                 address,
-            }),
+            }) : "",
             method: "POST",
         } as RequestOptions;
         return new Promise((resolve) => {
